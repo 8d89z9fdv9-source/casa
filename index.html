@@ -55743,6 +55743,16 @@ function lounger(X, x, y, z, rot) {
   X.m.copy(m0);
   X.block(-0.33, -0.95, 0.33, 0.6, 0, 0.5);
 }
+// tenda di lino raccolta di lato (tre pieghe sfalsate), da terra al soffitto
+function curtain(X, x0, z0, x1, z1, y, h) {
+  X.at(0, y, 0, 0);
+  const alongX = (x1 - x0) > (z1 - z0);
+  for (let i = 0; i < 3; i++) {
+    const a = i / 3, b = (i + 1) / 3 + 0.04, off = (i % 2) * 0.02;
+    if (alongX) X.rbox('linen', x0 + (x1 - x0) * a, 0.02, z0 + off, Math.min(x1, x0 + (x1 - x0) * b), h, z1 + off, 0.02);
+    else X.rbox('linen', x0 + off, 0.02, z0 + (z1 - z0) * a, x1 + off, h, Math.min(z1, z0 + (z1 - z0) * b), 0.02);
+  }
+}
 // ramo/tronco tra due punti, rastremato
 const _up = new THREE.Vector3(0, 1, 0);
 function limb(B, mat, p, q, r0, r1, seg = 8) {
@@ -55873,7 +55883,10 @@ function buildFurniture(mats) {
   X.cyl('chrome', 1.9, 0.9, 8.27, 0.016, 0.016, 0.32);
   X.box('chrome', 1.9, 1.2, 8.26, 2.08, 1.22, 8.28);
   X.box('screen', 1.94, 0.9, 9.05, 2.34, 0.906, 9.65);
-  X.box('woodF', 1.80, 1.65, 7.6, 2.08, 1.69, 9.75);
+  X.box('woodF', 1.80, 1.65, 7.6, 2.08, 1.69, 8.85);
+  // cappa da 60 cm sopra il piano cottura, a 72 cm dal piano, con il camino fino al soffitto
+  X.box('steel', 1.80, 1.62, 9.03, 2.32, 1.70, 9.67);
+  X.box('lacquerF', 1.80, 1.70, 9.20, 2.12, 2.74, 9.50);
   X.block(1.80, 6.25, 2.44, 9.90, 0, 2.45);
   // isola: mobile da 78 cm più 27 di piano a sbalzo per le gambe, con tre sgabelli a 60 cm l'uno
   // dall'altro (colazione e pasti veloci). Davanti a lavello e lavastoviglie restano 1.02 m (con 84 cm,
@@ -55887,6 +55900,13 @@ function buildFurniture(mats) {
     X.cyl('woodF', 0, 0.68, 0, 0.18, 0.18, 0.045, 24);
     X.cyl('black', 0, 0, 0, 0.16, 0.16, 0.015, 24);
     X.cyl('black', 0, 0, 0, 0.025, 0.025, 0.68, 10);
+  }
+  // due lampade a sospensione sull'isola, a 75 cm dal piano
+  for (const z of [7.78, 8.52]) {
+    X.at(4.0, g0, z, 0);
+    X.cyl('black', 0, 1.80, 0, 0.004, 0.004, 0.94, 6);
+    X.cyl('black', 0, 1.66, 0, 0.13, 0.03, 0.16, 24);
+    X.cyl('lamp', 0, 1.655, 0, 0.1, 0.1, 0.01, 24);
   }
   // ---------------- soggiorno ----------------
   // Dalla porta d'ingresso si va in cucina e al bagno lungo il lato ovest, dietro il divano (1.17 m);
@@ -55902,15 +55922,32 @@ function buildFurniture(mats) {
   X.box('black', -0.78, 0, -0.18, 0.78, 0.12, 0.16);
   X.box('screen', -0.72, 0.95, -0.2, 0.72, 1.78, -0.17);
   X.block(-0.8, -0.2, 0.8, 0.2, 0, 0.45);
-  plant(X, 8.25, g0, 13.30, 1.1);
+  // angolo lettura davanti alla vetrata d'angolo: poltrona girata verso la stanza, lampada da terra e
+  // la pianta nell'angolo dietro. Resta lontano 1 m dalla porta d'ingresso aperta
+  sofa(X, 7.85, g0, 12.85, -3 * PI / 4, 0.85, 0.85);
+  // girata di 45° la poltrona avrebbe un ingombro da 1.20 × 1.20: tengo solo il quadrato centrale,
+  // così ci si può avvicinare per sedersi
+  col.pop(); col.push({ x0: 7.40, x1: 8.30, z0: 12.40, z1: 13.30, y0: g0, y1: g0 + 0.86, on: true, tag: 'furn' });
+  X.at(8.32, g0, 12.30, 0);
+  X.cyl('black', 0, 0, 0, 0.15, 0.15, 0.02, 24);
+  X.cyl('black', 0, 0.02, 0, 0.012, 0.012, 1.45, 8);
+  X.cyl('fabric', 0, 1.42, 0, 0.2, 0.15, 0.26, 24);
+  X.block(-0.15, -0.15, 0.15, 0.15, 0, 1.68);
+  plant(X, 8.38, g0, 13.53, 0.9);
+  // tende di lino raccolte sui muri ai lati delle vetrate: non tolgono luce né passaggio
+  curtain(X, 5.62, 8.57, 5.86, 8.63, g0, 2.70);
+  curtain(X, 7.93, 8.57, 8.13, 8.63, g0, 2.70);
+  curtain(X, 8.53, 12.45, 8.59, 12.68, g0, 2.70);
+  curtain(X, 7.34, 13.68, 7.56, 13.74, g0, 2.70);
   // Consolle allungabile per mangiare in casa: chiusa è un mobile profondo 45 cm sulla parete est,
   // accanto alla tv; aperta diventa un tavolo 160 × 90 per sei davanti alla vetrata del pergolato
-  // (sedie a 50 cm dal vetro, 63 cm liberi verso l'anta che si apre) e il tavolino scivola verso il
-  // divano. Si apre e si chiude come le porte. Le due versioni hanno ingombri propri ('cons').
+  // (sedie a 50 cm dal vetro, 63 cm liberi verso l'anta che si apre) e il tavolino si sposta davanti
+  // alla tv, così dall'ingresso si arriva alle sedie. Si apre e si chiude come le porte. Le due
+  // versioni hanno ingombri propri ('cons').
   const cons = { colC: [], colO: [] };
   const BC = new Builder(), BK = new Builder(), BO = new Builder(), BT = new Builder();
-  const tavolino = (Xt, z) => {
-    Xt.at(7.15, g0, z, PI / 2);
+  const tavolino = (Xt, x, z) => {
+    Xt.at(x, g0, z, PI / 2);
     Xt.rbox('marble', -0.55, 0.36, -0.3, 0.55, 0.4, 0.3, 0.01);
     Xt.box('black', -0.48, 0, -0.23, 0.48, 0.36, 0.23);
     Xt.block(-0.55, -0.3, 0.55, 0.3, 0, 0.5);     // un po' più alto del gradino, se no ci si passa attraverso
@@ -55923,11 +55960,11 @@ function buildFurniture(mats) {
     for (const [x, z] of [[8.17, 8.73], [8.56, 8.73], [8.17, 9.87], [8.56, 9.87]]) XC.box('black', x - 0.02, 0, z - 0.02, x + 0.02, 0.62, z + 0.02);
     XC.cyl('ceramic', 8.37, 0.76, 9.05, 0.07, 0.09, 0.28, 24);
     XC.block(8.14, 8.70, 8.59, 9.90, 0, 0.76);
-    tavolino(new XB(BK, cons.colC, 'cons'), axisZ);
+    tavolino(new XB(BK, cons.colC, 'cons'), 7.15, axisZ);
     const XO = new XB(BO, cons.colO, 'cons');
     table(XO, 7.28, g0, 9.87, 0, 1.6, 0.9);
     for (const x of [6.75, 7.28, 7.81]) { chair(XO, x, g0, 9.30, 0); chair(XO, x, g0, 10.44, PI); }
-    tavolino(new XB(BT, cons.colO, 'cons'), 11.60);
+    tavolino(new XB(BT, cons.colO, 'cons'), 7.85, 11.30);   // a tavola apparecchiata il tavolino va davanti alla tv
   }
   for (const b of cons.colO) b.on = false;
   cons.parts = { console: BC.build(mats), coffeeC: BK.build(mats), table: BO.build(mats), coffeeO: BT.build(mats) };
@@ -55948,6 +55985,9 @@ function buildFurniture(mats) {
   X.box('rail', 3.40, 0.04, 10.05, 3.41, 2.0, 10.75);
   X.cyl('chrome', 4.1, 1.95, 10.15, 0.11, 0.11, 0.015, 24);
   X.block(3.38, 10.05, 3.42, 10.76, 0, 2.0);
+  // scaldasalviette sul muro est, subito fuori dalla doccia
+  for (let i = 0; i < 9; i++) X.box('steel', 4.15, 0.45 + i * 0.13, 10.95, 4.19, 0.475 + i * 0.13, 11.45);
+  X.box('steel', 4.15, 0.40, 10.95, 4.19, 1.55, 10.98); X.box('steel', 4.15, 0.40, 11.42, 4.19, 1.55, 11.45);
 
   // ---------------- camera grande ----------------
   bed(X, 1.43, L1, 7.05, PI / 2, 1.8, 2.1);
@@ -55956,11 +55996,28 @@ function buildFurniture(mats) {
   // del disimpegno restano 95 cm. La pianta va nell'angolo dietro il comodino, non davanti alle ante
   wardrobe(X, 5.10, L1, 6.60, -PI / 2, 3.0);
   X.at(0, L1, 0, 0); X.box('rug', 1.9, 0, 5.75, 3.6, 0.012, 8.35);
+  // panca imbottita ai piedi del letto (130 × 40) e tende ai lati della portafinestra sulla terrazza
+  X.at(2.82, L1, 7.05, PI / 2);
+  X.rbox('fabricDark', -0.65, 0.12, -0.2, 0.65, 0.45, 0.2, 0.03);
+  for (const [lx, lz] of [[-0.6, -0.15], [0.6, -0.15], [-0.6, 0.15], [0.6, 0.15]]) X.box('black', lx - 0.015, 0, lz - 0.015, lx + 0.015, 0.12, lz + 0.015);
+  X.block(-0.65, -0.2, 0.65, 0.2, 0, 0.5);
+  curtain(X, 1.88, 5.07, 2.12, 5.13, L1, 2.70);
+  curtain(X, 3.58, 5.07, 3.80, 5.13, L1, 2.70);
   plant(X, 0.62, L1, 5.36, 1.0);
   // ---------------- camera 3.10 (porta scorrevole) ----------------
   bed(X, 7.05, L1, 9.53, 0, 1.6, 2.0);
   nightstand(X, 5.72, L1, 8.70, 0); nightstand(X, 8.25, L1, 8.70, 0);
-  wardrobe(X, 7.2, L1, 12.0, PI, 2.4);
+  // sul muro sud armadio da 1.80 e, accanto, angolo studio con scrivania 100 × 55, lampada e sedia.
+  // Tra i piedi del letto e la scrivania restano 1.18 m: si arriva al lato est del letto e al balcone
+  wardrobe(X, 6.45, L1, 12.0, PI, 1.8);
+  X.at(0, L1, 0, 0);
+  X.box('woodF', 7.45, 0.72, 11.75, 8.45, 0.75, 12.30);
+  for (const [x, z] of [[7.48, 11.78], [8.42, 11.78], [7.48, 12.27], [8.42, 12.27]]) X.box('black', x - 0.015, 0, z - 0.015, x + 0.015, 0.72, z + 0.015);
+  X.block(7.45, 11.75, 8.45, 12.30, 0, 0.75);
+  X.at(8.25, L1, 12.15, 0);
+  X.cyl('black', 0, 0.75, 0, 0.07, 0.07, 0.015, 16); X.cyl('black', 0, 0.75, 0, 0.008, 0.008, 0.38, 6); X.cyl('fabric', 0, 1.08, 0, 0.09, 0.06, 0.12, 16);
+  chair(X, 7.95, L1, 11.40, 0);
+  curtain(X, 8.53, 9.04, 8.59, 9.27, L1, 2.70);
   // ---------------- camera 3.00 ----------------
   // testata a est, letto al centro della stanza: 65 cm liberi su tutti e due i lati (prima da un
   // lato restavano 35 cm e non ci si arrivava), 0.85 m ai piedi verso l'ingresso
@@ -55969,6 +56026,8 @@ function buildFurniture(mats) {
   // armadio nell'ingresso della camera, su tutto il muro sud (1.15 m invece di 70 cm): davanti
   // restano 83 cm e la porta scorrevole sta dall'altra parte del muro
   wardrobe(X, 6.875, L1, 13.49, PI, 1.15, 0.52);
+  curtain(X, 8.08, 15.32, 8.31, 15.38, L1, 2.70);
+  curtain(X, 9.59, 15.32, 9.82, 15.38, L1, 2.70);
   // ---------------- disimpegno ----------------
   // armadio per la biancheria (1.10 × 0.35, alto 2.20) sulla parete del bagno, tra la porta del
   // bagno e l'arrivo della scala: il corridoio resta largo 85 cm
@@ -55980,6 +56039,10 @@ function buildFurniture(mats) {
   X.cyl('chrome', 2.2, 1.95, 11.45, 0.12, 0.12, 0.015, 24);
   X.block(2.72, 10.95, 2.76, 11.65, 0, 2.0);
   vanity(X, 2.65, L1, 9.15, 0, 1.0);
+  // scaldasalviette basso sotto la finestra, sul muro ovest
+  X.at(0, L1, 0, 0);
+  for (let i = 0; i < 7; i++) X.box('steel', 1.81, 0.20 + i * 0.13, 9.80, 1.85, 0.225 + i * 0.13, 10.30);
+  X.box('steel', 1.81, 0.15, 9.80, 1.85, 1.10, 9.83); X.box('steel', 1.81, 0.15, 10.27, 1.85, 1.10, 10.30);
   // wc e bidet sulla parete sud con 21 cm liberi da ogni lato: tra vetro della doccia, wc, bidet
   // e muro (prima tra wc e bidet ne restavano 16)
   wcPan(X, 3.14, L1, 11.65, PI); wcPan(X, 3.71, L1, 11.65, PI, true);
@@ -56708,7 +56771,7 @@ function buildHouse(mats) {
   // luci interne, stanze, punti di arrivo
   // =====================================================================
   const lights = [
-    [3.55, C0, 7.9], [6.95, C0, 10.75], [7.65, C0, 12.70], [3.0, C0, 10.85], [9.6, C0, 14.0], [2.85, C0, 3.6],
+    [4.0, C0, 8.15], [6.95, C0, 10.75], [7.65, C0, 12.70], [3.0, C0, 10.85], [9.6, C0, 14.0], [2.85, C0, 3.6],
     [2.85, C1, 7.05], [7.05, C1, 10.4], [8.9, C1, 13.9], [2.95, C1, 10.4], [4.8, C1, 11.2], [2.6, C1, 12.75],
   ];
   for (const [x, y, z] of lights) S.box(x - 0.16, y - 0.025, z - 0.16, x + 0.16, y, z + 0.16, { all: 'lamp', py: null });
