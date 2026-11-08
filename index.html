@@ -55848,14 +55848,14 @@ function buildFurniture(mats) {
   X.box('screen', 1.94, 0.9, 9.05, 2.34, 0.906, 9.65);
   X.box('woodF', 1.80, 1.65, 7.6, 2.08, 1.69, 9.75);
   X.block(1.80, 6.25, 2.44, 9.90, 0, 2.45);
-  // isola con due sgabelli: mobile da 78 cm più 27 di piano a sbalzo per le gambe. Davanti a
-  // lavello e lavastoviglie restano 1.02 m (con 84 cm, a lavastoviglie aperta non si passava),
-  // più di 85 cm sugli altri lati
+  // isola: mobile da 78 cm più 27 di piano a sbalzo per le gambe, con tre sgabelli a 60 cm l'uno
+  // dall'altro (colazione e pasti veloci). Davanti a lavello e lavastoviglie restano 1.02 m (con 84 cm,
+  // a lavastoviglie aperta non si passava), più di 85 cm sugli altri lati
   X.box('lacquerF', 3.50, 0.09, 7.32, 4.28, 0.86, 8.98);
   X.box('black', 3.54, 0, 7.36, 4.24, 0.09, 8.94);
   X.box('marble', 3.46, 0.86, 7.28, 4.55, 0.9, 9.02);
   X.block(3.46, 7.28, 4.55, 9.02, 0, 0.9);
-  for (const z of [8.3, 8.8]) {
+  for (const z of [7.55, 8.15, 8.75]) {
     X.at(4.75, g0, z, 0);
     X.cyl('woodF', 0, 0.68, 0, 0.18, 0.18, 0.045, 24);
     X.cyl('black', 0, 0, 0, 0.16, 0.16, 0.015, 24);
@@ -55880,6 +55880,15 @@ function buildFurniture(mats) {
   X.block(-0.8, -0.2, 0.8, 0.2, 0, 0.45);
   plant(X, 8.32, g0, 8.85, 1.2);
   plant(X, 8.25, g0, 13.30, 1.1);
+  // ingresso: scarpiera con specchio sul tratto di muro a est della porta (85 cm tra porta e vetrata).
+  // La porta, che apre verso est, ci si ferma contro a 3 cm
+  X.at(0, g0, 0, 0);
+  X.box('lacquerF', 6.48, 0.10, 13.43, 7.27, 1.00, 13.75);
+  X.box('black', 6.50, 0, 13.45, 7.25, 0.10, 13.73);
+  X.box('black', 6.873, 0.13, 13.426, 6.877, 0.97, 13.431);
+  X.box('woodF', 6.47, 1.00, 13.42, 7.28, 1.03, 13.75);
+  X.box('mirror', 6.62, 1.32, 13.735, 7.13, 2.05, 13.75);
+  X.block(6.48, 13.43, 7.27, 13.75, 0, 1.03);
   // ---------------- bagno piano terra ----------------
   wcPan(X, 1.80, g0, 11.18, PI / 2);
   vanity(X, 2.85, g0, 10.05, 0, 0.8);
@@ -55891,11 +55900,12 @@ function buildFurniture(mats) {
 
   // ---------------- camera grande ----------------
   bed(X, 1.43, L1, 7.05, PI / 2, 1.8, 2.1);
-  nightstand(X, 0.55, L1, 5.82, PI / 2); nightstand(X, 0.55, L1, 8.28, PI / 2);
-  // armadio di 2.40 m: lascia 0.75 m liberi davanti alla porta del disimpegno
-  wardrobe(X, 5.10, L1, 6.30, -PI / 2, 2.4);
+  nightstand(X, 0.55, L1, 5.80, PI / 2); nightstand(X, 0.55, L1, 8.30, PI / 2);
+  // armadio di 3 m su tutta la parete est (per una coppia 2.40 m sono pochi): davanti alla porta
+  // del disimpegno restano 95 cm. La pianta va nell'angolo dietro il comodino, non davanti alle ante
+  wardrobe(X, 5.10, L1, 6.60, -PI / 2, 3.0);
   X.at(0, L1, 0, 0); X.box('rug', 1.9, 0, 5.75, 3.6, 0.012, 8.35);
-  plant(X, 4.3, L1, 5.45, 1.1);
+  plant(X, 0.62, L1, 5.36, 1.0);
   // ---------------- camera 3.10 (porta scorrevole) ----------------
   bed(X, 7.05, L1, 9.53, 0, 1.6, 2.0);
   nightstand(X, 5.72, L1, 8.70, 0); nightstand(X, 8.25, L1, 8.70, 0);
@@ -55904,9 +55914,14 @@ function buildFurniture(mats) {
   // testata a est, letto al centro della stanza: 65 cm liberi su tutti e due i lati (prima da un
   // lato restavano 35 cm e non ci si arrivava), 0.85 m ai piedi verso l'ingresso
   bed(X, 9.34, L1, 13.90, -PI / 2, 1.6, 2.0);
-  nightstand(X, 10.20, L1, 12.82, -PI / 2); nightstand(X, 10.20, L1, 14.98, -PI / 2);
-  // armadio stretto nell'ingresso, fuori dal giro della porta
-  wardrobe(X, 7.10, L1, 13.49, PI, 0.70, 0.52);
+  nightstand(X, 10.20, L1, 12.76, -PI / 2); nightstand(X, 10.20, L1, 15.04, -PI / 2);
+  // armadio nell'ingresso della camera, su tutto il muro sud (1.15 m invece di 70 cm): davanti
+  // restano 83 cm e la porta scorrevole sta dall'altra parte del muro
+  wardrobe(X, 6.875, L1, 13.49, PI, 1.15, 0.52);
+  // ---------------- disimpegno ----------------
+  // armadio per la biancheria (1.10 × 0.35, alto 2.20) sulla parete del bagno, tra la porta del
+  // bagno e l'arrivo della scala: il corridoio resta largo 85 cm
+  wardrobe(X, 4.375, L1, 11.05, PI / 2, 1.10, 0.35, 2.2);
   // ---------------- bagno piano primo ----------------
   X.at(0, L1, 0, 0);
   X.box('ceramic', 1.80, 0, 10.75, 2.75, 0.04, 11.65);
@@ -55937,6 +55952,18 @@ function buildFurniture(mats) {
   X.cyl('teak', 0, 0.68, 0, 0.3, 0.3, 0.03, 24); X.cyl('black', 0, 0, 0, 0.025, 0.025, 0.68, 10);
   X.block(-0.3, -0.3, 0.3, 0.3, 0, 0.7);
   chair(X, 1.8, L1, 14.95, PI / 2, 'teak', 'fabricOut'); chair(X, 3.1, L1, 14.95, -PI / 2, 'teak', 'fabricOut');
+  // balcone della camera 3.10: tavolino e due sedie in fondo, lontano dalla portafinestra
+  X.at(9.43, L1, 11.30, 0);
+  X.cyl('teak', 0, 0.68, 0, 0.28, 0.28, 0.03, 24); X.cyl('black', 0, 0, 0, 0.025, 0.025, 0.68, 10);
+  X.block(-0.28, -0.28, 0.28, 0.28, 0, 0.7);
+  chair(X, 9.43, L1, 10.76, 0, 'teak', 'fabricOut'); chair(X, 9.43, L1, 11.84, PI, 'teak', 'fabricOut');
+  // portico d'ingresso: panca in teak contro la vetrata del soggiorno, per sedersi a togliere le
+  // scarpe o aspettare; davanti restano 1.17 m di passaggio verso il lato est
+  X.at(8.10, GF, 14.30, 0);
+  X.box('teak', -0.70, 0.40, -0.21, 0.70, 0.45, 0.21);
+  X.box('teak', -0.68, 0, -0.19, -0.62, 0.40, 0.19); X.box('teak', 0.62, 0, -0.19, 0.68, 0.40, 0.19);
+  X.rbox('fabricOut', -0.66, 0.45, -0.19, 0.66, 0.51, 0.19, 0.02);
+  X.block(-0.70, -0.21, 0.70, 0.21, 0, 0.5);
   // piscina: due lettini sul prato a est, all'ombra dell'ulivo d'angolo, rivolti verso l'acqua
   lounger(X, 11.4, 0, -1.75, -PI / 2); lounger(X, 11.4, 0, -3.05, -PI / 2);
   // ingresso
