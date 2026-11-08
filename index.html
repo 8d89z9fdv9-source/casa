@@ -55611,15 +55611,6 @@ function table(X, x, y, z, rot, w, d, top = 'woodF') {
   for (const [lx, lz] of [[-ix, -iz], [ix, -iz], [-ix, iz], [ix, iz]]) X.box('black', lx - 0.025, 0, lz - 0.025, lx + 0.025, 0.715, lz + 0.025);
   X.block(-w / 2, -d / 2, w / 2, d / 2, 0, 0.76);
 }
-// tavolo rotondo a colonna: l'ingombro è un quadrato un po' più piccolo del piano, così negli
-// spicchi tra le sedie ci si avvicina quasi quanto al tavolo vero
-function roundTable(X, x, y, z, r, top = 'woodF') {
-  X.at(x, y, z, 0);
-  X.cyl(top, 0, 0.715, 0, r, r, 0.04, 48);
-  X.cyl('black', 0, 0.02, 0, 0.05, 0.05, 0.695, 12);
-  X.cyl('black', 0, 0, 0, 0.28, 0.28, 0.02, 32);
-  X.block(-0.9 * r, -0.9 * r, 0.9 * r, 0.9 * r, 0, 0.76);
-}
 function sofa(X, x, y, z, rot, w, d = 0.95, mat = 'fabric', accent = 'fabricBlue') {
   X.at(x, y, z, rot);
   const hw = w / 2, hd = d / 2;
@@ -55872,8 +55863,7 @@ function buildFurniture(mats) {
   // Dalla porta d'ingresso si va in cucina e al bagno lungo il lato ovest, dietro il divano (1.17 m);
   // tra il divano e la scala restano 0.94 m, verso la vetrata del pergolato 1.10 m.
   // Tv da 65" sulla parete est e divano da 3 posti di fronte, sullo stesso asse, a circa 2.6 m.
-  // Con l'isola in cucina il tavolo da pranzo è rotondo, da 4 (diametro 1 m), nell'angolo vetrato:
-  // un tavolo da 6 nel soggiorno chiudeva il passaggio dall'ingresso alla cucina.
+  // L'angolo vetrato verso il portico resta libero, con una pianta (Gabriele ha tolto il tavolo rotondo).
   const axisZ = 10.75;
   X.at(0, g0, 0, 0); X.box('rug', 6.10, 0, 9.75, 8.05, 0.012, 11.75);
   sofa(X, 5.95, g0, axisZ, PI / 2, 2.2, 0.95);
@@ -55886,20 +55876,8 @@ function buildFurniture(mats) {
   X.box('black', -0.78, 0, -0.18, 0.78, 0.12, 0.16);
   X.box('screen', -0.72, 0.95, -0.2, 0.72, 1.78, -0.17);
   X.block(-0.8, -0.2, 0.8, 0.2, 0, 0.45);
-  // tavolo rotondo davanti alla vetrata d'angolo, sedie in diagonale: restano 66 cm verso il
-  // tavolino, 41 cm verso il mobile tv e quasi mezzo metro dalla porta d'ingresso
-  const TX = 7.65, TZ = 12.70;
-  roundTable(X, TX, g0, TZ, 0.5);
-  // la sedia girata di a guarda verso (sin a, cos a): la metto dalla parte opposta, così guarda il tavolo
-  for (const a of [PI / 4, 3 * PI / 4, -PI / 4, -3 * PI / 4]) {
-    chair(X, TX - Math.sin(a) * 0.58, g0, TZ - Math.cos(a) * 0.58, a);
-  }
-  X.at(TX, g0, TZ, 0);
-  X.cyl('black', 0, 1.88, 0, 0.004, 0.004, 0.86, 6);
-  X.cyl('black', 0, 1.70, 0, 0.26, 0.05, 0.18, 32);
-  X.cyl('lamp', 0, 1.69, 0, 0.2, 0.2, 0.012, 32);
   plant(X, 8.32, g0, 8.85, 1.2);
-  plant(X, 8.42, g0, 13.57, 0.8);
+  plant(X, 8.25, g0, 13.30, 1.1);
   // ---------------- bagno piano terra ----------------
   wcPan(X, 1.80, g0, 11.18, PI / 2);
   vanity(X, 2.85, g0, 10.05, 0, 0.8);
