@@ -480,7 +480,7 @@ if (window.ResizeObserver) {
 canvas.addEventListener('webglcontextrestored', () => { if (M) applySun(); needsRender = true; });
 
 // ------------------------------------------------------------------ mondo
-let H, F, M, walkMesh, furnGroup, col, pointLights = [];
+let H, F, M, walkMesh, furnGroup, col, pointLights = [], consolle = null;
 // Le plafoniere sono 12 ma le luci vere sono 4: seguono la persona e accendono le più vicine.
 const POOL = 4;
 function setLights(on) {
@@ -508,6 +508,7 @@ function setFurniture(on) {
   state.furniture = on; store.set('furniture', on);
   if (furnGroup) furnGroup.visible = on;
   if (col) for (const b of col) if (b.tag === 'furn') b.on = on;
+  syncConsolle();
   shadowsDirty = true;
   $('k-mobili').setAttribute('aria-pressed', String(on));
   needsRender = true;
@@ -529,8 +530,21 @@ async function buildWorld() {
   furnGroup = new THREE.Group();
   for (const m of F.furn) furnGroup.add(m);
   scene.add(furnGroup);
+  // consolle allungabile del soggiorno: si apre e si chiude come una porta, ma invece di muoversi
+  // cambia forma (mobile contro il muro / tavolo per sei con le sedie)
+  {
+    const c = F.consolle, gC = new THREE.Group(), gO = new THREE.Group(), hitC = new THREE.Group(), hitO = new THREE.Group();
+    for (const m of c.parts.console) hitC.add(m);
+    for (const m of c.parts.coffeeC) gC.add(m);
+    for (const m of c.parts.table) hitO.add(m);
+    for (const m of c.parts.coffeeO) gO.add(m);
+    gC.add(hitC); gO.add(hitO); gO.visible = false;
+    furnGroup.add(gC, gO);
+    consolle = { kind: 'consolle', g: hitC, th: 0, t: 0, target: 0, box: null, links: [], gC, gO, hitC, hitO, colC: c.colC, colO: c.colO };
+    H.doors.push(consolle);
+  }
   for (const m of F.trees) { scene.add(m); if (m.material.alphaTest > 0) aoHidden.push(m); }
-  col = H.col.concat(F.col, F.tcol);
+  col = H.col.concat(F.col, F.tcol, F.consolle.colC, F.consolle.colO);
   for (let k = 0; k < POOL; k++) {
     const l = new THREE.PointLight(0xffd8ae, 7, 7, 2);
     l.visible = false;
@@ -630,11 +644,24 @@ function doorAt(ndc, far) {
   return best;
 }
 function aimedDoor() { return doorAt(CENTER, 2.6); }
-function toggleDoor(d) { const t = d.target ? 0 : 1; d.target = t; for (const x of d.links || []) x.target = t; }
+function toggleDoor(d) {
+  const t = d.target ? 0 : 1; d.target = t; for (const x of d.links || []) x.target = t;
+  if (d.kind === 'consolle') toast(t ? 'La consolle si allunga: tavolo per sei' : 'Il tavolo torna consolle');
+}
+// consolle: a metà corsa si passa dal mobile chiuso al tavolo aperto (e viceversa), con i loro ingombri
+function syncConsolle() {
+  if (!consolle) return;
+  const aperta = consolle.t >= 0.5, on = state.furniture;
+  consolle.gC.visible = !aperta; consolle.gO.visible = aperta;
+  consolle.g = aperta ? consolle.hitO : consolle.hitC;
+  for (const b of consolle.colC) b.on = on && !aperta;
+  for (const b of consolle.colO) b.on = on && aperta;
+}
 function animateDoors(dt) {
   for (const d of H.doors) {
     if (d.t === d.target) continue;
     d.t = Math.min(1, Math.max(0, d.t + Math.sign(d.target - d.t) * dt * 1.5));
+    if (d.kind === 'consolle') { syncConsolle(); shadowsDirty = true; continue; }
     const e = d.t * d.t * (3 - 2 * d.t);
     if (d.slide) { d.g.position.copy(d.base); if (d.axis === 'x') d.g.position.x += d.slide * e; else d.g.position.z += d.slide * e; }
     else d.g.rotation.y = d.th * e;
@@ -975,7 +1002,7 @@ function loop(now) {
   if (playing && aimTimer > 0.1) {
     aimTimer = 0;
     const d = aimedDoor(); const a = $('azione');
-    if (d) { a.hidden = false; $('azione-testo').textContent = d.target ? 'Chiudi' : 'Apri'; } else a.hidden = true;
+    if (d) { a.hidden = false; $('azione-testo').textContent = d.kind === 'consolle' ? (d.target ? 'Chiudi il tavolo' : 'Apri il tavolo') : (d.target ? 'Chiudi' : 'Apri'); } else a.hidden = true;
   }
   if (shadowsDirty) { renderer.shadowMap.needsUpdate = true; shadowsDirty = false; }
   if (useAO) composer.render(); else renderer.render(scene, camera);
@@ -997,7 +1024,7 @@ async function start(data = {}) {
     $('carica').hidden = true;
     $('menu').hidden = false;
     window.__casa = { player, camera, state, applySun, applyQuality, setLights, setFurniture, H, renderer, play, pause, keys, scene, sun, hemi, M, updateEnv, gtao, col, pointLights, gov, floorAt, level: () => lvl, dirty: () => { shadowsDirty = true; },
-      touch, setTouchUI, touchUI: () => touchUI, isMobile, fps: () => fpsNow, hz: () => refreshHz, doorAt, toggleDoor, forcePlay: () => { playing = true; $('menu').hidden = true; $('hud').hidden = false; },
+      touch, setTouchUI, touchUI: () => touchUI, isMobile, fps: () => fpsNow, hz: () => refreshHz, doorAt, toggleDoor, consolle: () => consolle, forcePlay: () => { playing = true; $('menu').hidden = true; $('hud').hidden = false; },
       tick: (n = 1) => { for (let i = 0; i < n; i++) { update(1 / 60); animateDoors(1 / 60); } updateRoom(); if (state.lightsOn && lightsAllowed) assignLights(); if (shadowsDirty) { renderer.shadowMap.needsUpdate = true; shadowsDirty = false; } if (useAO) composer.render(); else renderer.render(scene, camera); } };
     requestAnimationFrame(loop);
   } catch (err) {
@@ -55869,17 +55896,41 @@ function buildFurniture(mats) {
   const axisZ = 10.75;
   X.at(0, g0, 0, 0); X.box('rug', 6.10, 0, 9.75, 8.05, 0.012, 11.75);
   sofa(X, 5.95, g0, axisZ, PI / 2, 2.2, 0.95);
-  X.at(7.15, g0, axisZ, PI / 2);
-  X.rbox('marble', -0.55, 0.36, -0.3, 0.55, 0.4, 0.3, 0.01);
-  X.box('black', -0.48, 0, -0.23, 0.48, 0.36, 0.23);
-  X.block(-0.55, -0.3, 0.55, 0.3, 0, 0.5);     // un po' più alto del gradino, se no ci si passa attraverso
+  // il tavolino è più giù, con la consolle: quando la consolle si apre scivola verso il divano
   X.at(8.38, g0, axisZ, -PI / 2);
   X.box('lacquerF', -0.8, 0.12, -0.2, 0.8, 0.45, 0.2);
   X.box('black', -0.78, 0, -0.18, 0.78, 0.12, 0.16);
   X.box('screen', -0.72, 0.95, -0.2, 0.72, 1.78, -0.17);
   X.block(-0.8, -0.2, 0.8, 0.2, 0, 0.45);
-  plant(X, 8.32, g0, 8.85, 1.2);
   plant(X, 8.25, g0, 13.30, 1.1);
+  // Consolle allungabile per mangiare in casa: chiusa è un mobile profondo 45 cm sulla parete est,
+  // accanto alla tv; aperta diventa un tavolo 160 × 90 per sei davanti alla vetrata del pergolato
+  // (sedie a 50 cm dal vetro, 63 cm liberi verso l'anta che si apre) e il tavolino scivola verso il
+  // divano. Si apre e si chiude come le porte. Le due versioni hanno ingombri propri ('cons').
+  const cons = { colC: [], colO: [] };
+  const BC = new Builder(), BK = new Builder(), BO = new Builder(), BT = new Builder();
+  const tavolino = (Xt, z) => {
+    Xt.at(7.15, g0, z, PI / 2);
+    Xt.rbox('marble', -0.55, 0.36, -0.3, 0.55, 0.4, 0.3, 0.01);
+    Xt.box('black', -0.48, 0, -0.23, 0.48, 0.36, 0.23);
+    Xt.block(-0.55, -0.3, 0.55, 0.3, 0, 0.5);     // un po' più alto del gradino, se no ci si passa attraverso
+  };
+  {
+    const XC = new XB(BC, cons.colC, 'cons');
+    XC.at(0, g0, 0, 0);
+    XC.rbox('woodF', 8.14, 0.72, 8.70, 8.59, 0.76, 9.90, 0.01);
+    XC.box('black', 8.16, 0.62, 8.72, 8.57, 0.72, 9.88);
+    for (const [x, z] of [[8.17, 8.73], [8.56, 8.73], [8.17, 9.87], [8.56, 9.87]]) XC.box('black', x - 0.02, 0, z - 0.02, x + 0.02, 0.62, z + 0.02);
+    XC.cyl('ceramic', 8.37, 0.76, 9.05, 0.07, 0.09, 0.28, 24);
+    XC.block(8.14, 8.70, 8.59, 9.90, 0, 0.76);
+    tavolino(new XB(BK, cons.colC, 'cons'), axisZ);
+    const XO = new XB(BO, cons.colO, 'cons');
+    table(XO, 7.28, g0, 9.87, 0, 1.6, 0.9);
+    for (const x of [6.75, 7.28, 7.81]) { chair(XO, x, g0, 9.30, 0); chair(XO, x, g0, 10.44, PI); }
+    tavolino(new XB(BT, cons.colO, 'cons'), 11.60);
+  }
+  for (const b of cons.colO) b.on = false;
+  cons.parts = { console: BC.build(mats), coffeeC: BK.build(mats), table: BO.build(mats), coffeeO: BT.build(mats) };
   // ingresso: scarpiera con specchio sul tratto di muro a est della porta (85 cm tra porta e vetrata).
   // La porta, che apre verso est, ci si ferma contro a 3 cm
   X.at(0, g0, 0, 0);
@@ -55979,7 +56030,7 @@ function buildFurniture(mats) {
     [12.4, 17.8, 1.05, 79],
   ]) olive(P, tcol, x, z, s, seed);
 
-  return { furn: B.build(mats), trees: P.build(mats), col, tcol };
+  return { furn: B.build(mats), trees: P.build(mats), col, tcol, consolle: cons };
 }
 
 return { buildFurniture };
