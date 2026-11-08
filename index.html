@@ -55848,11 +55848,13 @@ function buildFurniture(mats) {
   X.box('screen', 1.94, 0.9, 9.05, 2.34, 0.906, 9.65);
   X.box('woodF', 1.80, 1.65, 7.6, 2.08, 1.69, 9.75);
   X.block(1.80, 6.25, 2.44, 9.90, 0, 2.45);
-  // isola con due sgabelli: 84 cm verso i mobili, più di 85 cm sugli altri lati
-  X.box('lacquerF', 3.32, 0.09, 7.32, 4.28, 0.86, 8.98);
-  X.box('black', 3.36, 0, 7.36, 4.24, 0.09, 8.94);
-  X.box('marble', 3.28, 0.86, 7.28, 4.55, 0.9, 9.02);
-  X.block(3.28, 7.28, 4.55, 9.02, 0, 0.9);
+  // isola con due sgabelli: mobile da 78 cm più 27 di piano a sbalzo per le gambe. Davanti a
+  // lavello e lavastoviglie restano 1.02 m (con 84 cm, a lavastoviglie aperta non si passava),
+  // più di 85 cm sugli altri lati
+  X.box('lacquerF', 3.50, 0.09, 7.32, 4.28, 0.86, 8.98);
+  X.box('black', 3.54, 0, 7.36, 4.24, 0.09, 8.94);
+  X.box('marble', 3.46, 0.86, 7.28, 4.55, 0.9, 9.02);
+  X.block(3.46, 7.28, 4.55, 9.02, 0, 0.9);
   for (const z of [8.3, 8.8]) {
     X.at(4.75, g0, z, 0);
     X.cyl('woodF', 0, 0.68, 0, 0.18, 0.18, 0.045, 24);
@@ -55912,7 +55914,9 @@ function buildFurniture(mats) {
   X.cyl('chrome', 2.2, 1.95, 11.45, 0.12, 0.12, 0.015, 24);
   X.block(2.72, 10.95, 2.76, 11.65, 0, 2.0);
   vanity(X, 2.65, L1, 9.15, 0, 1.0);
-  wcPan(X, 3.2, L1, 11.65, PI); wcPan(X, 3.72, L1, 11.65, PI, true);
+  // wc e bidet sulla parete sud con 21 cm liberi da ogni lato: tra vetro della doccia, wc, bidet
+  // e muro (prima tra wc e bidet ne restavano 16)
+  wcPan(X, 3.14, L1, 11.65, PI); wcPan(X, 3.71, L1, 11.65, PI, true);
 
   // ---------------- esterni ----------------
   // pergolato: tavolo da pranzo
@@ -56375,8 +56379,10 @@ function buildHouse(mats) {
   wall('z', 6.21, 8.25, 5.40, 5.70, GF, C0, EXT_P, [sl2(6.45, 7.85, GF, GF + 2.35, 'a')]);                // cucina est
   wall('x', 5.40, 8.90, 8.25, 8.55, GF, C0, EXT_N, [sl2(5.90, 7.90, GF, GF + 2.35, 'a')]);               // soggiorno nord
   wall('z', 8.55, 14.05, 8.60, 8.90, GF, C0, EXT_P, [{ a: 12.40, b: 13.75, sill: GF, head: GF + 2.40, kind: 'glass' }]);
+  // porta d'ingresso blindata: apre verso l'interno con i cardini a est, così l'anta aperta va
+  // verso il soggiorno e non contro il fondo della scala, che sta subito a ovest della porta
   wall('x', 1.80, 8.60, 13.75, 14.05, GF, C0, EXT_P, [
-    { a: 5.45, b: 6.45, sill: GF, head: GF + 2.40, kind: 'front', swing: -1, hinge: 'a', open: false },
+    { a: 5.45, b: 6.45, sill: GF, head: GF + 2.40, kind: 'front', swing: -1, hinge: 'b', open: false },
     { a: 7.30, b: 8.60, sill: GF, head: GF + 2.40, kind: 'glass' }]);
   // tramezzi piano terra
   wall('x', 1.80, 4.30, 9.95, 10.05, GF, C0, INT);
